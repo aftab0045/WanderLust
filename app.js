@@ -7,10 +7,14 @@ const ejsMate = require("ejs-mate");
 const ExpressError = require("./utils/ExpressError");
 const session = require("express-session");
 const flash = require("connect-flash");
+const passport = require("passport");
+const LocalStrategy = require("passport-local");
+const User = require("./models/user.js");
 
 
-const listings = require("./routes/listing.js");
-const reviews = require("./routes/review.js");
+const listingsRouter = require("./routes/listing.js");
+const reviewsRouter = require("./routes/review.js");
+const userRouter = require("./routes/user.js");
 
 const Mongoose_URL = "mongodb://localhost:27017/Airbnb";
 
@@ -45,14 +49,17 @@ const sessionOptions = {
     },
 };
 
-app.get("/", (req,res) =>{
-    res.send("Hii, I'm Root !");
-});
 
 
 app.use(session(sessionOptions));
 app.use(flash());
 
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStrategy(User.authenticate()));
+
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
 
 app.use((req,res,next) =>{
     res.locals.success = req.flash("success");
@@ -60,26 +67,22 @@ app.use((req,res,next) =>{
     next();
 });
 
+app.get("/demouser", async (req,res) =>{
+    let fakeUser = new User({
+        email: "abc@gmail.com",
+        username: "abc",
+    });
+
+    let registerUser = await User.register(fakeUser,"password");
+    res.send(registerUser);
+});
 
 
-app.use("/listings",listings);
-app.use("/listings/:id/reviews",reviews);
 
+app.use("/listings",listingsRouter);
+app.use("/listings/:id/reviews",reviewsRouter);
+app.use("/",userRouter);
 
-
-// app.get("/test",async (req,res) =>{
-//     let sampleListing = new Listing({
-//         title:"My Home",
-//         description: "New Home For Rent",
-//         price: 3000,
-//         location: "Goa",
-//         country: "India"
-//     });
-
-//     await sampleListing.save();
-//     console.log("saved");
-//     res.send("seccess");
-// });
 
 
 app.all("*",(req,res,next) => {
