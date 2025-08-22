@@ -67,15 +67,15 @@ app.use((req,res,next) =>{
     next();
 });
 
-app.get("/demouser", async (req,res) =>{
-    let fakeUser = new User({
-        email: "abc@gmail.com",
-        username: "abc",
-    });
+// app.get("/demouser", async (req,res) =>{
+//     let fakeUser = new User({
+//         email: "abc@gmail.com",
+//         username: "abc",
+//     });
 
-    let registerUser = await User.register(fakeUser,"password");
-    res.send(registerUser);
-});
+//     let registerUser = await User.register(fakeUser,"password");
+//     res.send(registerUser);
+// });
 
 
 
