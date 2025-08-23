@@ -17,8 +17,14 @@ router.post(
       const newUser = new User({ email, username });
       let registerdUser = await User.register(newUser, password);
       console.log(registerdUser);
-      req.flash("success", "User Registerd Successfully");
-      res.redirect("/listings");
+      req.login(registerdUser,(err) =>{
+        if(err) {
+        return next(err);
+        }
+        req.flash("success", "User Registerd Successfully");
+        res.redirect("/listings");
+      })
+      
     } catch (err) {
       req.flash("error", err.message);
       res.redirect("/signup");
@@ -34,6 +40,17 @@ router.get("/login", (req,res) =>{
 router.post("/login", passport.authenticate("local",{ failureRedirect: "/login" , failureFlash: true }) , async(req,res) =>{
     req.flash("success","Welcome to WanderLost! Logged In Successfull !");
     res.redirect("/listings");
+});
+
+//logout functionality
+router.get("/logout",(req,res,next) =>{
+  req.logOut((err) =>{
+    if(err) {
+      return next(err);
+    }
+    req.flash("success", "You're Logged Out!");
+    res.redirect("listings");
+  })
 });
 
 module.exports = router;
